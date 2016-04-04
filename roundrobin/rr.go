@@ -67,9 +67,15 @@ func (r *RoundRobin) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		r.errHandler.ServeHTTP(w, req, err)
 		return
 	}
-	// make shallow copy of request before chaning anything to avoid side effects
+
+	// make shallow copy of request before changing anything to avoid side effects
 	newReq := *req
 	newReq.URL = url
+	newReq.URL.RawPath = req.URL.RawPath
+	newReq.URL.Path = req.URL.Path
+	newReq.URL.RawQuery = req.URL.RawQuery
+	newReq.URL.Fragment = req.URL.Fragment
+
 	r.next.ServeHTTP(w, &newReq)
 }
 
