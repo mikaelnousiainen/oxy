@@ -1,14 +1,12 @@
-package stream
+package buffer
 
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 
 	"github.com/vulcand/oxy/forward"
 	"github.com/vulcand/oxy/roundrobin"
 	"github.com/vulcand/oxy/testutils"
-	"github.com/vulcand/oxy/utils"
 
 	. "gopkg.in/check.v1"
 )
@@ -77,10 +75,9 @@ func (s *RTSuite) TestRetryExceedAttempts(c *C) {
 	c.Assert(re.StatusCode, Equals, http.StatusBadGateway)
 }
 
-func new(c *C, p string) (*roundrobin.RoundRobin, *Streamer) {
-	logger := utils.NewFileLogger(os.Stdout, utils.INFO)
+func new(c *C, p string) (*roundrobin.RoundRobin, *Buffer) {
 	// forwarder will proxy the request to whatever destination
-	fwd, err := forward.New(forward.Logger(logger))
+	fwd, err := forward.New()
 	c.Assert(err, IsNil)
 
 	// load balancer will round robin request
@@ -88,7 +85,7 @@ func new(c *C, p string) (*roundrobin.RoundRobin, *Streamer) {
 	c.Assert(err, IsNil)
 
 	// stream handler will forward requests to redirect, make sure it uses files
-	st, err := New(lb, Logger(logger), Retry(p), MemRequestBodyBytes(1))
+	st, err := New(lb, Retry(p), MemRequestBodyBytes(1))
 	c.Assert(err, IsNil)
 
 	return lb, st
